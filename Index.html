@@ -1,1 +1,95 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard DKM Masjid</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+    section {
+      padding: 1em;
+    }
+    h2 {
+      color: #2e7d32;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5em;
+      text-align: left;
+    }
+    th {
+      background: #e0f2f1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dashboard DKM Masjid</h1>
+    <p>Data dari Google Sheets (Live Update)</p>
+  </header>
+  <section>
+    <h2>Jadwal Kegiatan</h2>
+    <div id="jadwal"></div>
+
+    <h2>Laporan Keuangan</h2>
+    <div id="keuangan"></div>
+
+    <h2>Inventaris Masjid</h2>
+    <div id="inventaris"></div>
+  </section>
+
+  <script>
+    const sheetID = '1ylYcJ8ob_Axjo5Si2Fcu5PCU0YnYc3iXVv8gDbNywtA';
+    const base = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?`; 
+
+    const sheets = {
+      jadwal: 'jadwal_kegiatan',
+      keuangan: 'keuangan',
+      inventaris: 'inventaris'
+    };
+
+    function fetchSheet(sheetName, containerId) {
+      const url = `${base}&sheet=${sheetName}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(rep => {
+          const jsonData = JSON.parse(rep.substr(47).slice(0, -2));
+          const cols = jsonData.table.cols.map(c => c.label);
+          const rows = jsonData.table.rows;
+
+          let html = '<table><thead><tr>' +
+            cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+
+          rows.forEach(row => {
+            html += '<tr>' +
+              row.c.map(cell => `<td>${cell ? cell.v : ''}</td>`).join('') + '</tr>';
+          });
+
+          html += '</tbody></table>';
+          document.getElementById(containerId).innerHTML = html;
+        });
+    }
+
+    fetchSheet(sheets.jadwal, 'jadwal');
+    fetchSheet(sheets.keuangan, 'keuangan');
+    fetchSheet(sheets.inventaris, 'inventaris');
+  </script>
+</body>
+</html>
